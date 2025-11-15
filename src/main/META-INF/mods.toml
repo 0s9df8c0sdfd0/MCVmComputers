@@ -1,1 +1,30 @@
 
+modLoader="javafml"
+loaderVersion="[47,)"
+license="CC0-1.0"
+issueTrackerURL="https://github.com/Delta2Force/MCVmComputers/issues"
+
+[[mods]]
+modId="mcvmcomputers"
+version="${version}"
+displayName="VM Computers"
+description='''
+Build computers that actually work using the VirtualBox API!
+'''
+logoFile="mcvmcomputers/icon.png"
+authors="DeltaTwoForce"
+credits="Original Fabric mod by DeltaTwoForce"
+
+[[dependencies.mcvmcomputers]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.mcvmcomputers]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20.1,1.21)"
+    ordering="NONE"
+    side="BOTH"
