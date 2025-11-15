@@ -1,57 +1,53 @@
 plugins {
     id 'eclipse'
+    id 'idea'
     id 'maven-publish'
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 version = '1.0.0'
-group = 'com.yourpackage.mcvmcomputers' // Change this to your package
+group = 'mcvmcomputers' // Your package name
 archivesBaseName = 'mcvmcomputers'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
-println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
-
 minecraft {
     mappings channel: 'official', version: '1.20.1'
     
-    // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg') // Uncomment if needed
-
     runs {
         client {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            property 'forge.enabledGameTestNamespaces', archivesBaseName
-
+            property 'forge.enabledGameTestNamespaces', 'mcvmcomputers'
+            
             mods {
                 mcvmcomputers {
                     source sourceSets.main
                 }
             }
         }
-
+        
         server {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            property 'forge.enabledGameTestNamespaces', archivesBaseName
-
+            property 'forge.enabledGameTestNamespaces', 'mcvmcomputers'
+            
             mods {
                 mcvmcomputers {
                     source sourceSets.main
                 }
             }
         }
-
+        
         data {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-
-            args '--mod', archivesBaseName, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
-
+            
+            args '--mod', 'mcvmcomputers', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            
             mods {
                 mcvmcomputers {
                     source sourceSets.main
@@ -64,46 +60,20 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
-    mavenCentral()
+    maven {
+        name = "VirtualBox SDK"
+        url = "https://jitpack.io" // If you need to add VirtualBox SDK
+    }
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.20.1-47.2.0'
+    minecraft 'net.minecraftforge:forge:1.20.1-47.3.0'
     
-    // Include your vboxjws.jar library
-    implementation files('lib/vboxjws.jar')
-    shadow files('lib/vboxjws.jar')
-}
-
-// Shadow jar configuration to include vboxjws
-shadowJar {
-    configurations = [project.configurations.shadow]
-    archiveClassifier = 'all'
+    // VirtualBox dependencies (from your lib folder)
+    implementation fileTree(dir: 'lib', include: ['*.jar'])
     
-    // Relocate the library to avoid conflicts (optional but recommended)
-    relocate 'org.virtualbox', 'com.yourpackage.mcvmcomputers.shadow.virtualbox'
-    
-    dependencies {
-        include(dependency(files('lib/vboxjws.jar')))
-    }
-}
-
-// Make the shadow jar before remapping
-reobf {
-    shadowJar {}
-}
-
-tasks.named('build').configure {
-    dependsOn 'shadowJar'
-}
-
-// Process resources
-processResources {
-    inputs.property 'version', project.version
-
-    filesMatching('META-INF/mods.toml') {
-        expand 'version': project.version
-    }
+    // LWJGL (should be provided by Minecraft/Forge)
+    // Apache Commons Lang (should be provided by Minecraft/Forge)
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -113,41 +83,28 @@ tasks.withType(JavaCompile).configureEach {
 jar {
     manifest {
         attributes([
-            'Specification-Title'     : archivesBaseName,
-            'Specification-Vendor'    : 'YourName',
-            'Specification-Version'   : '1',
-            'Implementation-Title'    : project.name,
-            'Implementation-Version'  : project.version,
-            'Implementation-Vendor'   : 'YourName',
-            'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+            "Specification-Title": "MCVmComputers",
+            "Specification-Vendor": "mcvmcomputers",
+            "Specification-Version": "1",
+            "Implementation-Title": project.name,
+            "Implementation-Version": project.version,
+            "Implementation-Vendor": "mcvmcomputers",
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
-
-    from 'LICENSE'
-    
-    finalizedBy 'reobfJar'
 }
 
-// Include sources jar
-task sourcesJar(type: Jar, dependsOn: classes) {
-    archiveClassifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-artifacts {
-    archives sourcesJar
-}
+jar.finalizedBy('reobfJar')
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
             artifact jar
-            artifact sourcesJar
         }
     }
     repositories {
         maven {
-            url "file://${project.projectDir}/mcmodsrepo"
+            url "file://${project.projectDir}/mcmod/maven"
         }
     }
 }
